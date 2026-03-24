@@ -439,3 +439,76 @@ resource "azurerm_kubernetes_cluster" "aks-pro" {
   }
 
 }
+
+
+# ===========================================================
+# PUBLIC LOAD BALANCER MARY-W-JACKSON (PRO)
+# ===========================================================
+
+# IP pública del Load Balancer
+resource "azurerm_public_ip" "Mary-W-Jackson-ip-PRO" {
+  name                = "Mary-W-Jackson-ip-PRO"
+  location            = local.location
+  resource_group_name = local.rg_name
+  allocation_method   = "Static"
+  sku                 = "Standard"
+
+  tags = {
+    environment = "PRO"
+  }
+}
+
+# Load Balancer principal
+resource "azurerm_lb" "Mary-W-Jackson-lb-PRO" {
+  name                = "Mary-W-Jackson-lb-PRO"
+  location            = local.location
+  resource_group_name = local.rg_name
+  sku                 = "Standard"
+
+  frontend_ip_configuration {
+    name                 = "Mary-W-Jackson-frontend-PRO"
+    public_ip_address_id = azurerm_public_ip.Mary-W-Jackson-ip-PRO.id
+  }
+
+  tags = {
+    environment = "PRO"
+  }
+}
+
+# Backend pool
+resource "azurerm_lb_backend_address_pool" "Mary-W-Jackson-backend-PRO" {
+  name                = "Mary-W-Jackson-backend-PRO"
+  loadbalancer_id     = azurerm_lb.Mary-W-Jackson-lb-PRO.id
+}
+
+# Asociación NIC → Backend pool
+resource "azurerm_network_interface_backend_address_pool_association" "Mary-W-Jackson-app1" {
+  network_interface_id    = azurerm_network_interface.Santa-Catalina-de-Siena-interface.id
+  ip_configuration_name   = "internal"
+  backend_address_pool_id = azurerm_lb_backend_address_pool.Mary-W-Jackson-backend-PRO.id
+}
+
+resource "azurerm_network_interface_backend_address_pool_association" "Mary-W-Jackson-app2" {
+  network_interface_id    = azurerm_network_interface.Santa-Teresa-de-Jesus-interface.id
+  ip_configuration_name   = "internal"
+  backend_address_pool_id = azurerm_lb_backend_address_pool.Mary-W-Jackson-backend-PRO.id
+}
+
+# Health Probe
+resource "azurerm_lb_probe" "Mary-W-Jackson-probe-PRO" {
+  name                = "Mary-W-Jackson-probe-PRO"
+  loadbalancer_id     = azurerm_lb.Mary-W-Jackson-lb-PRO.id
+  protocol            = "Tcp"
+  port                = 80
+}
+
+# Regla de balanceo (puerto 80)
+resource "azurerm_lb_rule" "Mary-W-Jackson-rule-80-PRO" {
+  name                           = "Mary-W-Jackson-rule-80-PRO"
+  loadbalancer_id                = azurerm_lb.Mary-W-Jackson-lb-PRO.id
+  protocol                       = "Tcp"
+  frontend_port                  = 80
+  backend_port                   = 80
+  frontend_ip_configuration_name = "Mary-W-Jackson-frontend-PRO"
+  probe_id                       = azurerm_lb_probe.Mary-W-Jackson-probe-PRO.id
+}
