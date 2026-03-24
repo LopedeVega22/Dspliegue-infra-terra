@@ -4,6 +4,15 @@ terraform {
         azurerm= { 
             source = "hashicorp/azurerm" 
             version ="4.64.0" 
+        }
+        kubernetes = {
+            source  = "hashicorp/kubernetes"
+            version = "~> 2.27"
+        }
+
+        helm = {
+            source  = "hashicorp/helm"
+            version = "~> 2.12"
         } 
     } 
 } 

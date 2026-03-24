@@ -357,3 +357,85 @@ os_profile {
     environment = "PRO"
   }
 }
+
+#====================================================
+#Máquina para AKS
+#====================================================
+#Creamos una IP pública para la máquina de maria-magdalena
+resource "azurerm_public_ip" "maria_magdalena_ip_PRO" {
+  name                = "maria-magdalena-ip-PRO"
+  resource_group_name = local.rg_name
+  location            = local.location
+  allocation_method   = "Static"
+  tags = {
+    environment = "PRO"
+  }
+}
+
+#Network interface de Maria Magdalena
+resource "azurerm_network_interface" "maria_magdalena-nic-PRO" {
+  name                = "maria-magdalena-nic-PRO"
+  location            = local.location
+  resource_group_name = local.rg_name
+
+  ip_configuration {
+    name                          = "internal"
+    subnet_id                     = azurerm_subnet.subnet01-PRO.id
+    private_ip_address_allocation = "Static"
+    private_ip_address            = "10.0.2.5"
+    public_ip_address_id          = azurerm_public_ip.maria_magdalena_ip_PRO.id
+  }
+}
+
+#Maquina maria magdalena - Ubuntu con AKS
+resource "azurerm_linux_virtual_machine" "maria-magdalena-pro" {
+  name                = "maria-magdalena-pro"
+  location            = local.location
+  resource_group_name = local.rg_name
+  size                = "Standard_B2s"
+  admin_username = "adminubuntu"
+  admin_password = "L0skU8ern3tes"
+  disable_password_authentication = false
+  network_interface_ids = [azurerm_network_interface.maria_magdalena-nic-PRO.id]
+
+  source_image_reference {
+    publisher = "Canonical"
+    offer     = "0001-com-ubuntu-server-jammy"
+    sku       = "22_04-lts-gen2"
+    version   = "latest"
+  }
+
+  os_disk {
+    caching              = "ReadWrite"
+    storage_account_type = "Standard_LRS"
+    disk_size_gb         = 40
+  }
+
+  tags = {
+    environment = "PRO"
+  }
+}
+
+#AKS Cluster
+resource "azurerm_kubernetes_cluster" "aks-pro" {
+  name                = "maria-magdalena-aks-pro"
+  location            = local.location
+  resource_group_name = local.rg_name
+  dns_prefix          = "aks-monitoring"
+
+  default_node_pool {
+    name       = "default"
+    node_count = 2
+    vm_size    = "Standard_DS2_v2"
+    os_sku     = "Ubuntu"
+  }
+
+  identity {
+    type = "SystemAssigned"
+  }
+
+  tags = {
+    environment = "PRO"
+  }
+
+}
