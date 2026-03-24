@@ -1,0 +1,232 @@
+#Hacemos una llamada 
+data "azurerm_resource_group" "rg_fct_ohmygit" {
+  name = "RG_OhMyGit"
+}
+
+#Creamos la virtual network de PRO
+resource "azurerm_virtual_network" "virtual-network-PRE" {
+  name                = "virtual-network-PRE" #llama al apartado nombre de virtual_network en los locals
+  location            = local.location
+  resource_group_name = local.rg_name
+  address_space       = ["10.0.0.0/16"] #llama al apartado prefijos de red de virtual_network en los locals
+  tags = {
+    environment = "PRE"
+  }
+}
+
+#Subred1
+resource "azurerm_subnet" "subnet01-PRE" {
+  name                 = "subnet01-PRE"
+  resource_group_name  = local.rg_name
+  virtual_network_name = azurerm_virtual_network.virtual-network-PRE.name
+  address_prefixes     = ["10.0.1.0/24"]
+}
+
+#IP publica que le asignaremos a la máqiona, esta es la ip a la que nos conectaremos
+resource "azurerm_public_ip" "alma-ip-PRE" {
+  name                = "alma-ip-PRE"
+  resource_group_name = local.rg_name
+  location            = local.location
+  allocation_method   = "Static"
+  tags = {
+    environment = "PRE"
+  }
+}
+
+output "alma_ip-PRE" {
+  value = azurerm_public_ip.alma-ip-PRE.ip_address #A la hora de desplegar nos da la IP de la maquina de Alma Linux
+}
+
+#Virtual interface para la primera máquina
+resource "azurerm_network_interface" "alma-interface-PRE" {
+  name                = "alma-interface-PRE"
+  location            = local.location
+  resource_group_name = local.rg_name
+
+  ip_configuration {
+    name                          = "internal"
+    subnet_id                     = azurerm_subnet.subnet01-PRE.id
+    private_ip_address_allocation = "Static"
+    private_ip_address = "10.0.1.50"
+    public_ip_address_id = azurerm_public_ip.alma-ip-PRE.id
+  }
+  tags = {
+    environment = "PRE"
+  }
+}
+
+#NSG, establecido por error al no declararlo
+resource "azurerm_network_security_group" "LegDig-nsg-PRE" {
+  name                = "LegDig-nsg-PRE"
+  location            = local.location
+  resource_group_name = local.rg_name
+
+  # SSH
+  security_rule {
+    name                       = "allow_ssh"
+    priority                   = 100
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "22"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
+
+  # HTTP (80)
+  security_rule {
+    name                       = "allow_http"
+    priority                   = 110
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "80"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
+
+  # HTTPS (443)
+  security_rule {
+    name                       = "allow_https"
+    priority                   = 120
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "443"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
+
+  # WEB personal (8080)
+  security_rule {
+    name                       = "allow_8080"
+    priority                   = 130
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "8080"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
+  tags = {
+    environment = "PRE"
+  }
+}
+
+#Asociacion de nuestro security group a las subredes, establecido por error al no declararlo
+resource "azurerm_subnet_network_security_group_association" "LegDig-nsgass" {
+  subnet_id                 = azurerm_subnet.subnet01-PRE.id
+  network_security_group_id = azurerm_network_security_group.LegDig-nsg-PRE.id
+}
+
+#Creación máquina virtual
+resource "azurerm_virtual_machine" "Juana-de-Arco" {
+  name                  = "Juana-de-Arco"
+  location              = local.location
+  resource_group_name   = local.rg_name
+  network_interface_ids = [azurerm_network_interface.alma-interface-PRE.id]
+  vm_size               = "Standard_B2as_v2"
+
+  storage_image_reference {
+    publisher = "almalinux"
+    offer     = "almalinux-x86_64"
+    sku       = "9-gen2"
+    version   = "latest"
+  }
+
+  storage_os_disk {
+    name              = "Juana-de-Arco-dsk"
+    caching           = "ReadWrite"
+    create_option     = "FromImage"
+    managed_disk_type = "Standard_LRS"
+    disk_size_gb      = 60
+  }
+
+  os_profile {
+    computer_name  = "Juana-de-Arco-PRE"
+    admin_username = "admcent-PRE"
+    admin_password = "L@c0ntr4s3n4de3steban"
+  }
+  os_profile_linux_config {
+    disable_password_authentication = false
+  }
+  tags = {
+    environment = "PRE"
+  }
+}
+
+#================================================
+#Configuracion máquina Ubuntu server web frontend
+#================================================
+#IP publica
+#resource "azurerm_public_ip" "ub1-ip-PRE" {
+#  name                = "ub1-ip-PRE"
+#  resource_group_name = local.rg_name
+#  location            = local.location
+#  allocation_method   = "Static"
+#  tags = {
+#    environment = "PRE"
+#  }
+#}
+
+#output "ub1-ip-PRE" {
+#  value = azurerm_public_ip.ub1-ip-PRE.ip_address #A la hora de desplegar nos da la IP de la maquina de Alma Linux
+#}
+
+#network interface ubuntu server pre
+#resource "azurerm_network_interface" "ub1-interface-PRE" {
+ # name                = "ub1-interface-PRE"
+  #location            = local.location
+  #resource_group_name = local.rg_name
+
+  #ip_configuration {
+   # name                          = "internal"
+    #subnet_id                     = azurerm_subnet.subnet01-PRE.id
+    #private_ip_address_allocation = "Static"
+    #private_ip_address = "10.0.1.100"
+    #public_ip_address_id = azurerm_public_ip.ub1-ip-PRE.id
+  #}
+  #tags = {
+   # environment = "PRE"
+  #}
+#}
+
+
+#resource "azurerm_virtual_machine" "UB1-LegDig-PRE" {
+ # name                  = "UB1-LegDig-PRE"
+ # location              = local.location
+ # resource_group_name   = local.rg_name
+ # network_interface_ids = [azurerm_network_interface.ub1-interface-PRE.id]
+ # vm_size               = "Standard_B2as_v2"
+
+ # storage_image_reference {
+ #   publisher = "canonical"
+#    offer     = "ubuntu-24_04-lts"
+#    sku       = "ubuntu-pro-gen1"
+ #   version   = "latest"
+ # }
+
+ # storage_os_disk {
+ #   name              = "UB1-PRE"
+ #   caching           = "ReadWrite"
+ #   create_option     = "FromImage"
+ #   managed_disk_type = "Standard_LRS"
+ #   disk_size_gb      = 100
+ # }
+
+ # os_profile {
+  #  computer_name  = "UB1-PRE"
+    #admin_username = "webmaster-PRE"
+   # admin_password = "3ste0rdEnAdOresS3gRo"
+  #}
+ # os_profile_linux_config {
+  #  disable_password_authentication = false
+ # }
+ # tags = {
+  #  environment = "PRE"
+ # }
+#}
