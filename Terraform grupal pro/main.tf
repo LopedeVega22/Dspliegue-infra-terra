@@ -43,7 +43,7 @@ resource "azurerm_network_interface" "alma-interface-PRO" {
     name                          = "internal"
     subnet_id                     = azurerm_subnet.subnet01-PRO.id
     private_ip_address_allocation = "Static"
-    private_ip_address = "10.0.2.50"
+    private_ip_address = "10.0.2.2"
     public_ip_address_id = azurerm_public_ip.alma-ip-PRO.id
   }
   tags = {
@@ -179,7 +179,7 @@ resource "azurerm_network_interface" "Santa-Catalina-de-Siena-interface" {
         name = "internal"
         subnet_id = azurerm_subnet.subnet01-PRO.id
         private_ip_address_allocation = "Static"
-        private_ip_address = "10.0.1.75"
+        private_ip_address = "10.0.2.75"
         public_ip_address_id = azurerm_public_ip.Santa-Catalina-de-Siena-ip.id
   }
 tags = {
@@ -192,7 +192,7 @@ resource "azurerm_virtual_machine" "Santa-Catalina-de-Siena" {
   name                  = "Santa-Catalina-de-Siena"
   location              = local.location
   resource_group_name   = local.rg_name
-  network_interface_ids = [azurerm_network_interface.Clara-Campoamor-interface.id]
+  network_interface_ids = [azurerm_network_interface.Santa-Catalina-de-Siena-interface.id]
   vm_size               = "Standard_B2as_v2"
 
 storage_image_reference {
@@ -247,7 +247,7 @@ resource "azurerm_network_interface" "Santa-Teresa-de-Jesus-interface" {
         name = "internal"
         subnet_id = azurerm_subnet.subnet01-PRO.id
         private_ip_address_allocation = "Static"
-        private_ip_address = "10.0.1.100"
+        private_ip_address = "10.0.2.100"
         public_ip_address_id = azurerm_public_ip.Santa-Teresa-de-Jesus-ip.id
   }
 tags = {
@@ -282,6 +282,73 @@ os_profile {
     computer_name  = "Santa-Teresa-de-Jesus-PRO"
     admin_username = "webmaster2-PRO"
     admin_password = "3ste0rdEnAdOresS3gRo-PRO"
+  }
+  os_profile_linux_config {
+    disable_password_authentication = false
+  }
+  tags = {
+    environment = "PRO"
+  }
+}
+
+#==============================================
+#Creamos un servidor Ubuntu para la BBDD de PRO
+#==============================================
+resource "azurerm_public_ip" "Margaret-Cross-Norton-ip" {
+  name                = "Margaret-Cross-Norton-ip"
+  resource_group_name = local.rg_name
+  location            = local.location
+  allocation_method   = "Static"
+  tags = {
+    environment = "PRO"
+  }
+}
+
+#network interface ubuntu server pro
+resource "azurerm_network_interface" "Margaret-Cross-Norton-interface" {
+  name                = "Margaret-Cross-Norton-interface"
+  location            = local.location
+  resource_group_name = local.rg_name
+
+    ip_configuration {
+        name = "internal"
+        subnet_id = azurerm_subnet.subnet01-PRO.id
+        private_ip_address_allocation = "Static"
+        private_ip_address = "10.0.2.33"
+        public_ip_address_id = azurerm_public_ip.Margaret-Cross-Norton-ip.id
+  }
+tags = {
+    environment = "PRO"
+  }
+}
+
+#Despliegue de la máquina virtual de Ubuntu
+resource "azurerm_virtual_machine" "Margaret-Cross-Norton" {
+  name                  = "Margaret-Cross-Norton"
+  location              = local.location
+  resource_group_name   = local.rg_name
+  network_interface_ids = [azurerm_network_interface.Margaret-Cross-Norton-interface.id]
+  vm_size               = "Standard_B2as_v2"
+
+storage_image_reference {
+   publisher = "canonical"
+    offer     = "ubuntu-24_04-lts"
+    sku       = "ubuntu-pro-gen1"
+   version   = "latest"
+  }
+
+  storage_os_disk {
+    name              = "Margaret-Cross-Norton-dsk"
+    caching           = "ReadWrite"
+    create_option     = "FromImage"
+    managed_disk_type = "Standard_LRS"
+    disk_size_gb      = 100
+  }
+
+os_profile {
+    computer_name  = "Margaret-Cross-Norton-PRO"
+    admin_username = "BBDDadmin-PRO"
+    admin_password = "C0nt1en3l4s8BDD-PRO"
   }
   os_profile_linux_config {
     disable_password_authentication = false

@@ -43,7 +43,7 @@ resource "azurerm_network_interface" "alma-interface-PRE" {
     name                          = "internal"
     subnet_id                     = azurerm_subnet.subnet01-PRE.id
     private_ip_address_allocation = "Static"
-    private_ip_address = "10.0.1.50"
+    private_ip_address = "10.0.1.2"
     public_ip_address_id = azurerm_public_ip.alma-ip-PRE.id
   }
   tags = {
@@ -214,6 +214,73 @@ os_profile {
     computer_name  = "Clara-Campoamor-PRE"
     admin_username = "webmaster-PRE"
     admin_password = "3ste0rdEnAdOresS3gRo"
+  }
+  os_profile_linux_config {
+    disable_password_authentication = false
+  }
+  tags = {
+    environment = "PRE"
+  }
+}
+
+#==============================================
+#Creamos un servidor Ubuntu para la BBDD de PRE
+#==============================================
+resource "azurerm_public_ip" "Mary-Ritter-Beard-ip" {
+  name                = "Mary-Ritter-Beard-ip"
+  resource_group_name = local.rg_name
+  location            = local.location
+  allocation_method   = "Static"
+  tags = {
+    environment = "PRE"
+  }
+}
+
+#network interface ubuntu server pro
+resource "azurerm_network_interface" "Mary-Ritter-Beard-interface" {
+  name                = "Mary-Ritter-Beard-interface"
+  location            = local.location
+  resource_group_name = local.rg_name
+
+    ip_configuration {
+        name = "internal"
+        subnet_id = azurerm_subnet.subnet01-PRE.id
+        private_ip_address_allocation = "Static"
+        private_ip_address = "10.0.1.33"
+        public_ip_address_id = azurerm_public_ip.Mary-Ritter-Beard-ip.id
+  }
+tags = {
+    environment = "PRE"
+  }
+}
+
+#Despliegue de la máquina virtual de Ubuntu
+resource "azurerm_virtual_machine" "Mary-Ritter-Beard" {
+  name                  = "Mary-Ritter-Beard"
+  location              = local.location
+  resource_group_name   = local.rg_name
+  network_interface_ids = [azurerm_network_interface.Mary-Ritter-Beard-interface.id]
+  vm_size               = "Standard_B2as_v2"
+
+storage_image_reference {
+   publisher = "canonical"
+    offer     = "ubuntu-24_04-lts"
+    sku       = "ubuntu-pro-gen1"
+   version   = "latest"
+  }
+
+  storage_os_disk {
+    name              = "Mary-Ritter-Beard-dsk"
+    caching           = "ReadWrite"
+    create_option     = "FromImage"
+    managed_disk_type = "Standard_LRS"
+    disk_size_gb      = 100
+  }
+
+os_profile {
+    computer_name  = "Mary-Ritter-Beard-PRE"
+    admin_username = "BBDDadmin-PRE"
+    admin_password = "C0nt1en3l4s8BDD"
   }
   os_profile_linux_config {
     disable_password_authentication = false
