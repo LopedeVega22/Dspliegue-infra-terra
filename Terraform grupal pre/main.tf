@@ -33,10 +33,6 @@ resource "azurerm_public_ip" "alma-ip-PRE" {
   }
 }
 
-output "alma_ip-PRE" {
-  value = azurerm_public_ip.alma-ip-PRE.ip_address #A la hora de desplegar nos da la IP de la maquina de Alma Linux
-}
-
 #Virtual interface para la primera máquina
 resource "azurerm_network_interface" "alma-interface-PRE" {
   name                = "alma-interface-PRE"
@@ -171,10 +167,6 @@ resource "azurerm_public_ip" "Clara-Campoamor-ip" {
   tags = {
     environment = "PRE"
   }
-}
-
-output "ub1-ip-PRE" {
-  value = azurerm_public_ip.Clara-Campoamor-ip.ip_address #A la hora de desplegar nos da la IP de la maquina de Alma Linux
 }
 
 #network interface ubuntu server pre

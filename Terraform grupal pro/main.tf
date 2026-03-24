@@ -33,10 +33,6 @@ resource "azurerm_public_ip" "alma-ip-PRO" {
   }
 }
 
-output "websubnet01_id" {
-  value = azurerm_public_ip.alma-ip-PRO.ip_address #A la hora de desplegar nos da la IP de la maquina de Alma Linux
-}
-
 #Virtual interface para la primera máquina
 resource "azurerm_network_interface" "alma-interface-PRO" {
   name                = "alma-interface-PRO"
@@ -173,10 +169,6 @@ resource "azurerm_public_ip" "Santa-Catalina-de-Siena-ip" {
   }
 }
 
-output "ub1-ip-PRE" {
-  value = azurerm_public_ip.Santa-Catalina-de-Siena-ip.ip_address #A la hora de desplegar nos da la IP de la maquina de Alma Linux
-}
-
 #network interface ubuntu server pro
 resource "azurerm_network_interface" "Santa-Catalina-de-Siena-interface" {
   name                = "Santa-Catalina-de-Siena-interface"
@@ -243,10 +235,6 @@ resource "azurerm_public_ip" "Santa-Teresa-de-Jesus-ip" {
   tags = {
     environment = "PRO"
   }
-}
-
-output "ub1-ip-PRE" {
-  value = azurerm_public_ip.Santa-Teresa-de-Jesus-ip.ip_address #A la hora de desplegar nos da la IP de la maquina de Alma Linux
 }
 
 #network interface ubuntu server pro
