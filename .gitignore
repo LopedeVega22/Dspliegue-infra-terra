@@ -1,0 +1,12 @@
+Terraform grupal pre/.terraform.lock.hcl
+Terraform grupal pre/terraform.tfstate
+Terraform grupal pre/main.tfplan
+Terraform grupal pre/terraform.tfstate.backup
+Terraform grupal pre/.terraform/providers/registry.terraform.io/hashicorp/azurerm/4.64.0/windows_amd64/LICENSE.txt
+Terraform grupal pre/.terraform/providers/registry.terraform.io/hashicorp/azurerm/4.64.0/windows_amd64/terraform-provider-azurerm_v4.64.0_x5.exe
+Terraform grupal pro/.terraform.lock.hcl
+Terraform grupal pro/terraform.tfstate
+Terraform grupal pro/main.tfplan
+Terraform grupal pro/.terraform/providers/registry.terraform.io/hashicorp/azurerm/4.64.0/windows_amd64/LICENSE.txt
+Terraform grupal pro/terraform.tfstate.backup
+Terraform grupal pro/.terraform/providers/registry.terraform.io/hashicorp/azurerm/4.64.0/windows_amd64/terraform-provider-azurerm_v4.64.0_x5.exe
