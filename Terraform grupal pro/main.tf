@@ -158,3 +158,147 @@ resource "azurerm_virtual_machine" "Isabel-La-Catolica" {
     environment = "PRO"
   }
 }
+
+#================================================
+#Configuracion máquina1 Ubuntu server web frontend
+#================================================
+#IP publica
+resource "azurerm_public_ip" "Santa-Catalina-de-Siena-ip" {
+  name                = "Santa-Catalina-de-Siena-ip"
+  resource_group_name = local.rg_name
+  location            = local.location
+  allocation_method   = "Static"
+  tags = {
+    environment = "PRO"
+  }
+}
+
+output "ub1-ip-PRE" {
+  value = azurerm_public_ip.Santa-Catalina-de-Siena-ip.ip_address #A la hora de desplegar nos da la IP de la maquina de Alma Linux
+}
+
+#network interface ubuntu server pro
+resource "azurerm_network_interface" "Santa-Catalina-de-Siena-interface" {
+  name                = "Santa-Catalina-de-Siena-interface"
+  location            = local.location
+  resource_group_name = local.rg_name
+
+    ip_configuration {
+        name = "internal"
+        subnet_id = azurerm_subnet.subnet01-PRO.id
+        private_ip_address_allocation = "Static"
+        private_ip_address = "10.0.1.75"
+        public_ip_address_id = azurerm_public_ip.Santa-Catalina-de-Siena-ip.id
+  }
+tags = {
+    environment = "PRO"
+  }
+}
+
+#Despliegue de la máquina virtual de Ubuntu
+resource "azurerm_virtual_machine" "Santa-Catalina-de-Siena" {
+  name                  = "Santa-Catalina-de-Siena"
+  location              = local.location
+  resource_group_name   = local.rg_name
+  network_interface_ids = [azurerm_network_interface.Clara-Campoamor-interface.id]
+  vm_size               = "Standard_B2as_v2"
+
+storage_image_reference {
+   publisher = "canonical"
+    offer     = "ubuntu-24_04-lts"
+    sku       = "ubuntu-pro-gen1"
+   version   = "latest"
+  }
+
+  storage_os_disk {
+    name              = "Santa-Catalina-de-Siena-dsk"
+    caching           = "ReadWrite"
+    create_option     = "FromImage"
+    managed_disk_type = "Standard_LRS"
+    disk_size_gb      = 100
+  }
+
+os_profile {
+    computer_name  = "Santa-Catalina-de-Siena-PRO"
+    admin_username = "webmaster1-PRO"
+    admin_password = "3ste0rdEnAdOresS3gRo-PRO"
+  }
+  os_profile_linux_config {
+    disable_password_authentication = false
+  }
+  tags = {
+    environment = "PRO"
+  }
+}
+
+#================================================
+#Configuracion máquina1 Ubuntu server web frontend
+#================================================
+#IP publica
+resource "azurerm_public_ip" "Santa-Teresa-de-Jesus-ip" {
+  name                = "Santa-Teresa-de-Jesus-ip"
+  resource_group_name = local.rg_name
+  location            = local.location
+  allocation_method   = "Static"
+  tags = {
+    environment = "PRO"
+  }
+}
+
+output "ub1-ip-PRE" {
+  value = azurerm_public_ip.Santa-Teresa-de-Jesus-ip.ip_address #A la hora de desplegar nos da la IP de la maquina de Alma Linux
+}
+
+#network interface ubuntu server pro
+resource "azurerm_network_interface" "Santa-Teresa-de-Jesus-interface" {
+  name                = "Santa-Teresa-de-Jesus-interface"
+  location            = local.location
+  resource_group_name = local.rg_name
+
+    ip_configuration {
+        name = "internal"
+        subnet_id = azurerm_subnet.subnet01-PRO.id
+        private_ip_address_allocation = "Static"
+        private_ip_address = "10.0.1.100"
+        public_ip_address_id = azurerm_public_ip.Santa-Teresa-de-Jesus-ip.id
+  }
+tags = {
+    environment = "PRO"
+  }
+}
+
+#Despliegue de la máquina virtual de Ubuntu
+resource "azurerm_virtual_machine" "Santa-Teresa-de-Jesus" {
+  name                  = "Santa-Teresa-de-Jesus"
+  location              = local.location
+  resource_group_name   = local.rg_name
+  network_interface_ids = [azurerm_network_interface.Santa-Teresa-de-Jesus-interface.id]
+  vm_size               = "Standard_B2as_v2"
+
+storage_image_reference {
+   publisher = "canonical"
+    offer     = "ubuntu-24_04-lts"
+    sku       = "ubuntu-pro-gen1"
+   version   = "latest"
+  }
+
+  storage_os_disk {
+    name              = "Santa-Teresa-de-Jesus-dsk"
+    caching           = "ReadWrite"
+    create_option     = "FromImage"
+    managed_disk_type = "Standard_LRS"
+    disk_size_gb      = 100
+  }
+
+os_profile {
+    computer_name  = "Santa-Teresa-de-Jesus-PRO"
+    admin_username = "webmaster2-PRO"
+    admin_password = "3ste0rdEnAdOresS3gRo-PRO"
+  }
+  os_profile_linux_config {
+    disable_password_authentication = false
+  }
+  tags = {
+    environment = "PRO"
+  }
+}
