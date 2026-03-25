@@ -4,8 +4,8 @@ data "azurerm_resource_group" "rg_fct_ohmygit" {
 }
 
 #Creamos la virtual network de PRO
-resource "azurerm_virtual_network" "virtual-network-PRO" {
-  name                = "virtual-network-PRO" #llama al apartado nombre de virtual_network en los locals
+resource "azurerm_virtual_network" "Marie-Curie-PRO" {
+  name                = "Marie-Curie-PRO" #llama al apartado nombre de virtual_network en los locals
   location            = local.location
   resource_group_name = local.rg_name
   address_space       = ["10.0.0.0/16"] #llama al apartado prefijos de red de virtual_network en los locals
@@ -15,16 +15,16 @@ resource "azurerm_virtual_network" "virtual-network-PRO" {
 }
 
 #Subred1
-resource "azurerm_subnet" "subnet01-PRO" {
-  name                 = "subnet01-PRO"
+resource "azurerm_subnet" "Malala-Yousafzai-PRO" {
+  name                 = "Malala-Yousafzai-PRO"
   resource_group_name  = local.rg_name
-  virtual_network_name = azurerm_virtual_network.virtual-network-PRO.name
+  virtual_network_name = azurerm_virtual_network.Marie-Curie-PRO.name
   address_prefixes     = ["10.0.2.0/24"]
 }
 
 #IP publica que le asignaremos a la máqiona, esta es la ip a la que nos conectaremos
-resource "azurerm_public_ip" "alma-ip-PRO" {
-  name                = "alma-ip-PRO"
+resource "azurerm_public_ip" "Isabel-La-Catolica-PRO" {
+  name                = "Isabel-La-Catolica-PRO"
   resource_group_name = local.rg_name
   location            = local.location
   allocation_method   = "Static"
@@ -34,17 +34,17 @@ resource "azurerm_public_ip" "alma-ip-PRO" {
 }
 
 #Virtual interface para la primera máquina
-resource "azurerm_network_interface" "alma-interface-PRO" {
-  name                = "alma-interface-PRO"
+resource "azurerm_network_interface" "Isabel-La-Catolica-PRO" {
+  name                = "Isabel-La-Catolica-PRO"
   location            = local.location
   resource_group_name = local.rg_name
 
   ip_configuration {
     name                          = "internal"
-    subnet_id                     = azurerm_subnet.subnet01-PRO.id
+    subnet_id                     = azurerm_subnet.Malala-Yousafzai-PRO.id
     private_ip_address_allocation = "Static"
     private_ip_address = "10.0.2.12"
-    public_ip_address_id = azurerm_public_ip.alma-ip-PRO.id
+    public_ip_address_id = azurerm_public_ip.Isabel-La-Catolica-PRO.id
   }
   tags = {
     environment = "PRO"
@@ -115,7 +115,7 @@ resource "azurerm_network_security_group" "LegDig-nsg-PRO" {
 
 #Asociacion de nuestro security group a las subredes, establecido por error al no declararlo
 resource "azurerm_subnet_network_security_group_association" "LegDig-nsgass" {
-  subnet_id                 = azurerm_subnet.subnet01-PRO.id
+  subnet_id                 = azurerm_subnet.Malala-Yousafzai-PRO.id
   network_security_group_id = azurerm_network_security_group.LegDig-nsg-PRO.id
 }
 
@@ -124,7 +124,7 @@ resource "azurerm_virtual_machine" "Isabel-La-Catolica" {
   name                  = "Isabel-La-Catolica" #usamos el valor definido en terraform.tfvars
   location              = local.location
   resource_group_name   = local.rg_name
-  network_interface_ids = [azurerm_network_interface.alma-interface-PRO.id]
+  network_interface_ids = [azurerm_network_interface.Isabel-La-Catolica-PRO.id]
   vm_size               = "Standard_B2as_v2"
 
   storage_image_reference {
@@ -177,7 +177,7 @@ resource "azurerm_network_interface" "Santa-Catalina-de-Siena-interface" {
 
     ip_configuration {
         name = "internal"
-        subnet_id = azurerm_subnet.subnet01-PRO.id
+        subnet_id = azurerm_subnet.Malala-Yousafzai-PRO.id
         private_ip_address_allocation = "Static"
         private_ip_address = "10.0.2.75"
         public_ip_address_id = azurerm_public_ip.Santa-Catalina-de-Siena-ip.id
@@ -245,7 +245,7 @@ resource "azurerm_network_interface" "Santa-Teresa-de-Jesus-interface" {
 
     ip_configuration {
         name = "internal"
-        subnet_id = azurerm_subnet.subnet01-PRO.id
+        subnet_id = azurerm_subnet.Malala-Yousafzai-PRO.id
         private_ip_address_allocation = "Static"
         private_ip_address = "10.0.2.100"
         public_ip_address_id = azurerm_public_ip.Santa-Teresa-de-Jesus-ip.id
@@ -312,7 +312,7 @@ resource "azurerm_network_interface" "Margaret-Cross-Norton-interface" {
 
     ip_configuration {
         name = "internal"
-        subnet_id = azurerm_subnet.subnet01-PRO.id
+        subnet_id = azurerm_subnet.Malala-Yousafzai-PRO.id
         private_ip_address_allocation = "Static"
         private_ip_address = "10.0.2.33"
         public_ip_address_id = azurerm_public_ip.Margaret-Cross-Norton-ip.id
@@ -380,7 +380,7 @@ resource "azurerm_network_interface" "maria_magdalena-nic-PRO" {
 
   ip_configuration {
     name                          = "internal"
-    subnet_id                     = azurerm_subnet.subnet01-PRO.id
+    subnet_id                     = azurerm_subnet.Malala-Yousafzai-PRO.id
     private_ip_address_allocation = "Static"
     private_ip_address            = "10.0.2.5"
     public_ip_address_id          = azurerm_public_ip.maria_magdalena_ip_PRO.id
