@@ -43,7 +43,7 @@ resource "azurerm_network_interface" "alma-interface-PRE" {
     name                          = "internal"
     subnet_id                     = azurerm_subnet.subnet01-PRE.id
     private_ip_address_allocation = "Static"
-    private_ip_address = "10.0.1.2"
+    private_ip_address = "10.0.1.12"
     public_ip_address_id = azurerm_public_ip.alma-ip-PRE.id
   }
   tags = {
