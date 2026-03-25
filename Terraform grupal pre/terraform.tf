@@ -7,6 +7,16 @@ terraform {
         } 
     } 
 } 
+
+terraform {  
+    backend "azurerm" {
+        resource_group_name  = "RG_OhMyGit"
+        storage_account_name = "terratfsa12345"
+        container_name       = "tfstate"
+        key                  = "terraform.tfstate"
+    }
+}
+
 #Damos los datos de la cuenta de nuestro proveedor
 provider "azurerm" {
     features {}

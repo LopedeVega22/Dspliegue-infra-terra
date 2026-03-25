@@ -3,6 +3,21 @@ data "azurerm_resource_group" "rg_fct_ohmygit" {
   name = "RG_OhMyGit"
 }
 
+# Storage Account para el backend
+resource "azurerm_storage_account" "terratf" {
+  name                     = "terratfsa12345pro"
+  resource_group_name      = local.rg_name
+  location                 = local.location
+  account_tier             = "Standard"
+  account_replication_type = "LRS"
+}
+
+# Contenedor para guardar el state
+resource "azurerm_storage_container" "tfstate" {
+  name                  = "tfstate"
+  storage_account_id    = azurerm_storage_account.terratf.id
+}
+
 #Creamos la virtual network de PRO
 resource "azurerm_virtual_network" "Marie-Curie-PRO" {
   name                = "Marie-Curie-PRO" #llama al apartado nombre de virtual_network en los locals
