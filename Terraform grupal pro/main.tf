@@ -14,8 +14,8 @@ resource "azurerm_storage_container" "tfstate" {
 }
 
 #Creamos la virtual network de PRO
-resource "azurerm_virtual_network" "Marie-Curie-PRO" {
-  name                = "Marie-Curie-PRO" #llama al apartado nombre de virtual_network en los locals
+resource "azurerm_virtual_network" "virtual-network-PRO" {
+  name                = "virtual-network-PRO" #llama al apartado nombre de virtual_network en los locals
   location            = local.location
   resource_group_name = local.rg_name
   address_space       = ["10.0.0.0/16"] #llama al apartado prefijos de red de virtual_network en los locals
@@ -25,10 +25,10 @@ resource "azurerm_virtual_network" "Marie-Curie-PRO" {
 }
 
 #Subred1
-resource "azurerm_subnet" "Malala-Yousafzai-PRO" {
-  name                 = "Malala-Yousafzai-PRO"
+resource "azurerm_subnet" "subnet01-PRO" {
+  name                 = "subnet01-PRO"
   resource_group_name  = local.rg_name
-  virtual_network_name = azurerm_virtual_network.Marie-Curie-PRO.name
+  virtual_network_name = azurerm_virtual_network.virtual-network-PRO.name
   address_prefixes     = ["10.0.2.0/24"]
 }
 
@@ -51,7 +51,7 @@ resource "azurerm_network_interface" "Isabel-La-Catolica-PRO" {
 
   ip_configuration {
     name                          = "internal"
-    subnet_id                     = azurerm_subnet.Malala-Yousafzai-PRO.id
+    subnet_id                     = azurerm_subnet.subnet01-PRO.id
     private_ip_address_allocation = "Static"
     private_ip_address = "10.0.2.12"
     public_ip_address_id = azurerm_public_ip.Isabel-La-Catolica-PRO.id
@@ -125,7 +125,7 @@ resource "azurerm_network_security_group" "LegDig-nsg-PRO" {
 
 #Asociacion de nuestro security group a las subredes, establecido por error al no declararlo
 resource "azurerm_subnet_network_security_group_association" "LegDig-nsgass" {
-  subnet_id                 = azurerm_subnet.Malala-Yousafzai-PRO.id
+  subnet_id                 = azurerm_subnet.subnet01-PRO.id
   network_security_group_id = azurerm_network_security_group.LegDig-nsg-PRO.id
 }
 
@@ -187,7 +187,7 @@ resource "azurerm_network_interface" "Santa-Catalina-de-Siena-interface" {
 
     ip_configuration {
         name = "internal"
-        subnet_id = azurerm_subnet.Malala-Yousafzai-PRO.id
+        subnet_id = azurerm_subnet.subnet01-PRO.id
         private_ip_address_allocation = "Static"
         private_ip_address = "10.0.2.75"
         public_ip_address_id = azurerm_public_ip.Santa-Catalina-de-Siena-ip.id
@@ -255,7 +255,7 @@ resource "azurerm_network_interface" "Santa-Teresa-de-Jesus-interface" {
 
     ip_configuration {
         name = "internal"
-        subnet_id = azurerm_subnet.Malala-Yousafzai-PRO.id
+        subnet_id = azurerm_subnet.subnet01-PRO.id
         private_ip_address_allocation = "Static"
         private_ip_address = "10.0.2.100"
         public_ip_address_id = azurerm_public_ip.Santa-Teresa-de-Jesus-ip.id
@@ -322,7 +322,7 @@ resource "azurerm_network_interface" "Margaret-Cross-Norton-interface" {
 
     ip_configuration {
         name = "internal"
-        subnet_id = azurerm_subnet.Malala-Yousafzai-PRO.id
+        subnet_id = azurerm_subnet.subnet01-PRO.id
         private_ip_address_allocation = "Static"
         private_ip_address = "10.0.2.33"
         public_ip_address_id = azurerm_public_ip.Margaret-Cross-Norton-ip.id
@@ -368,104 +368,6 @@ os_profile {
   }
 }
 
-#====================================================
-#Máquina para AKS
-#====================================================
-#Creamos una IP pública para la máquina de maria-magdalena
-resource "azurerm_public_ip" "maria_magdalena_ip_PRO" {
-  name                = "maria-magdalena-ip-PRO"
-  resource_group_name = local.rg_name
-  location            = local.location
-  allocation_method   = "Static"
-  tags = {
-    environment = "PRO"
-  }
-}
-
-#Network interface de Maria Magdalena
-resource "azurerm_network_interface" "maria_magdalena-nic-PRO" {
-  name                = "maria-magdalena-nic-PRO"
-  location            = local.location
-  resource_group_name = local.rg_name
-
-  ip_configuration {
-    name                          = "internal"
-    subnet_id                     = azurerm_subnet.Malala-Yousafzai-PRO.id
-    private_ip_address_allocation = "Static"
-    private_ip_address            = "10.0.2.5"
-    public_ip_address_id          = azurerm_public_ip.maria_magdalena_ip_PRO.id
-  }
-}
-
-#Maquina maria magdalena - Ubuntu con AKS
-resource "azurerm_linux_virtual_machine" "maria-magdalena-pro" {
-  name                = "maria-magdalena-pro"
-  location            = local.location
-  resource_group_name = local.rg_name
-  size                = "Standard_B2s"
-  admin_username = "adminubuntu"
-  admin_password = "L0skU8ern3tes"
-  disable_password_authentication = false
-  network_interface_ids = [azurerm_network_interface.maria_magdalena-nic-PRO.id]
-
-  source_image_reference {
-    publisher = "Canonical"
-    offer     = "0001-com-ubuntu-server-jammy"
-    sku       = "22_04-lts-gen2"
-    version   = "latest"
-  }
-
-  os_disk {
-    caching              = "ReadWrite"
-    storage_account_type = "Standard_LRS"
-    disk_size_gb         = 40
-  }
-
-  tags = {
-    environment = "PRO"
-  }
-}
-
-#AKS con 3 clústeres para cada aplicación de observabilidad
-locals {
-  aks_clusters = {
-    aks-pro1 = {
-      name       = "maria-emilia-aks"
-      dns_prefix = "aks-dns1-pro"
-    }
-    aks-pro2 = {
-      name       = "maria-eugenia-aks"
-      dns_prefix = "aks-dns2-pro"
-    }
-    aks-pro3 = {
-      name       = "maria-rousse-aks"
-      dns_prefix = "aks-dns3-pro"
-    }
-  }
-}
-
-resource "azurerm_kubernetes_cluster" "aks" {
-  for_each            = local.aks_clusters
-  name                = each.value.name
-  location            = local.location
-  resource_group_name = local.rg_name
-  dns_prefix          = each.value.dns_prefix
-
-  default_node_pool {
-    name       = "default"
-    node_count = 2
-    vm_size    = "Standard_DS2_v2"
-    os_sku     = "Ubuntu"
-  }
-
-  identity {
-    type = "SystemAssigned"
-  }
-
-  tags = {
-    environment = "PRO"
-  }
-}
 
 # ===========================================================
 # PUBLIC LOAD BALANCER MARY-W-JACKSON (PRO)
@@ -530,26 +432,14 @@ resource "azurerm_lb_probe" "Mary-W-Jackson-probe-PRO" {
 }
 
 # Regla de balanceo (puerto 80)
-resource "azurerm_lb_rule" "Mary-W-Jackson-rule-80-PRO" {
-  name                            = "Mary-W-Jackson-rule-80-PRO"
-  loadbalancer_id                 = azurerm_lb.Mary-W-Jackson-lb-PRO.id
-  protocol                        = "Tcp"
-  frontend_port                   = 80
-  backend_port                    = 80
-  frontend_ip_configuration_name  = "Mary-W-Jackson-frontend-PRO"
-  probe_id                        = azurerm_lb_probe.Mary-W-Jackson-probe-PRO.id
-}
-
-
-# Outbound rule (necesaria en LB Standard)
-resource "azurerm_lb_outbound_rule" "Mary-W-Jackson-outbound-PRO" {
-  name                    = "Mary-W-Jackson-outbound-PRO"
-  loadbalancer_id         = azurerm_lb.Mary-W-Jackson-lb-PRO.id
-  protocol                = "All"
-  backend_address_pool_id = azurerm_lb_backend_address_pool.Mary-W-Jackson-backend-PRO.id
-
-  frontend_ip_configuration {
-    name = "Mary-W-Jackson-frontend-PRO"
-  }
-}
+ resource "azurerm_lb_rule" "Mary-W-Jackson-rule-80-PRO" {
+   name                            = "Mary-W-Jackson-rule-80-PRO"
+   loadbalancer_id                 = azurerm_lb.Mary-W-Jackson-lb-PRO.id
+   protocol                        = "Tcp"
+   frontend_port                   = 80
+   backend_port                    = 80
+   frontend_ip_configuration_name  = "Mary-W-Jackson-frontend-PRO"
+   probe_id                        = azurerm_lb_probe.Mary-W-Jackson-probe-PRO.id
+   disable_outbound_snat = true
+ }
 
