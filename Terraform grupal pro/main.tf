@@ -395,7 +395,7 @@ resource "azurerm_network_interface" "maria_magdalena-nic-PRO" {
 
   ip_configuration {
     name                          = "internal"
-    subnet_id                     = azurerm_subnet.Malala-Yousafzai-PRO.id
+    subnet_id                     = azurerm_subnet.maria-magdalena-PRO.id
     private_ip_address_allocation = "Static"
     private_ip_address            = "10.0.2.5"
     public_ip_address_id          = azurerm_public_ip.maria_magdalena_ip_PRO.id
