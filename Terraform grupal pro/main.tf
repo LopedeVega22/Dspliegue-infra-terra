@@ -1,8 +1,3 @@
-#Hacemos una llamada 
-data "azurerm_resource_group" "rg_fct_ohmygit" {
-  name = "RG_OhMyGit"
-}
-
 # Storage Account para el backend
 resource "azurerm_storage_account" "terratf" {
   name                     = "terratfsa12345pro"
