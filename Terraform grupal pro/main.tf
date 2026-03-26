@@ -390,7 +390,7 @@ resource "azurerm_network_interface" "maria_magdalena-nic-PRO" {
 
   ip_configuration {
     name                          = "internal"
-    subnet_id                     = azurerm_subnet.Malala-Yousafzai-PRO.id
+    subnet_id                     = azurerm_subnet.maria-magdalena-PRO.id
     private_ip_address_allocation = "Static"
     private_ip_address            = "10.0.2.5"
     public_ip_address_id          = azurerm_public_ip.maria_magdalena_ip_PRO.id
@@ -426,12 +426,30 @@ resource "azurerm_linux_virtual_machine" "maria-magdalena-pro" {
   }
 }
 
-#AKS Cluster
-resource "azurerm_kubernetes_cluster" "aks-pro" {
-  name                = "maria-magdalena-aks-pro"
+#AKS con 3 clústeres para cada aplicación de observabilidad
+locals {
+  aks_clusters = {
+    aks-pro1 = {
+      name       = "maria-emilia-aks"
+      dns_prefix = "aks-dns1-pro"
+    }
+    aks-pro2 = {
+      name       = "maria-eugenia-aks"
+      dns_prefix = "aks-dns2-pro"
+    }
+    aks-pro3 = {
+      name       = "maria-rousse-aks"
+      dns_prefix = "aks-dns3-pro"
+    }
+  }
+}
+
+resource "azurerm_kubernetes_cluster" "aks" {
+  for_each            = local.aks_clusters
+  name                = each.value.name
   location            = local.location
   resource_group_name = local.rg_name
-  dns_prefix          = "aks-monitoring"
+  dns_prefix          = each.value.dns_prefix
 
   default_node_pool {
     name       = "default"
@@ -447,9 +465,7 @@ resource "azurerm_kubernetes_cluster" "aks-pro" {
   tags = {
     environment = "PRO"
   }
-
 }
-
 
 # ===========================================================
 # PUBLIC LOAD BALANCER MARY-W-JACKSON (PRO)
