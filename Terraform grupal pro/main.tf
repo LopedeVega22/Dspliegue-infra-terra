@@ -456,6 +456,8 @@ resource "azurerm_kubernetes_cluster" "aks-pro" {
 # ===========================================================
 
 # IP pública del Load Balancer
+
+# IP pública del Load Balancer
 resource "azurerm_public_ip" "Mary-W-Jackson-ip-PRO" {
   name                = "Mary-W-Jackson-ip-PRO"
   location            = local.location
@@ -487,38 +489,53 @@ resource "azurerm_lb" "Mary-W-Jackson-lb-PRO" {
 
 # Backend pool
 resource "azurerm_lb_backend_address_pool" "Mary-W-Jackson-backend-PRO" {
-  name                = "Mary-W-Jackson-backend-PRO"
-  loadbalancer_id     = azurerm_lb.Mary-W-Jackson-lb-PRO.id
+  name            = "Mary-W-Jackson-backend-PRO"
+  loadbalancer_id = azurerm_lb.Mary-W-Jackson-lb-PRO.id
 }
 
-# Asociación NIC → Backend pool
+# Asociación NIC → Backend pool (APP1)
 resource "azurerm_network_interface_backend_address_pool_association" "Mary-W-Jackson-app1" {
   network_interface_id    = azurerm_network_interface.Santa-Catalina-de-Siena-interface.id
   ip_configuration_name   = "internal"
   backend_address_pool_id = azurerm_lb_backend_address_pool.Mary-W-Jackson-backend-PRO.id
 }
 
+# Asociación NIC → Backend pool (APP2)
 resource "azurerm_network_interface_backend_address_pool_association" "Mary-W-Jackson-app2" {
   network_interface_id    = azurerm_network_interface.Santa-Teresa-de-Jesus-interface.id
   ip_configuration_name   = "internal"
   backend_address_pool_id = azurerm_lb_backend_address_pool.Mary-W-Jackson-backend-PRO.id
 }
 
-# Health Probe
+# Health Probe (80/TCP)
 resource "azurerm_lb_probe" "Mary-W-Jackson-probe-PRO" {
-  name                = "Mary-W-Jackson-probe-PRO"
-  loadbalancer_id     = azurerm_lb.Mary-W-Jackson-lb-PRO.id
-  protocol            = "Tcp"
-  port                = 80
+  name            = "Mary-W-Jackson-probe-PRO"
+  loadbalancer_id = azurerm_lb.Mary-W-Jackson-lb-PRO.id
+  protocol        = "Tcp"
+  port            = 80
 }
 
 # Regla de balanceo (puerto 80)
 resource "azurerm_lb_rule" "Mary-W-Jackson-rule-80-PRO" {
-  name                           = "Mary-W-Jackson-rule-80-PRO"
-  loadbalancer_id                = azurerm_lb.Mary-W-Jackson-lb-PRO.id
-  protocol                       = "Tcp"
-  frontend_port                  = 80
-  backend_port                   = 80
-  frontend_ip_configuration_name = "Mary-W-Jackson-frontend-PRO"
-  probe_id                       = azurerm_lb_probe.Mary-W-Jackson-probe-PRO.id
+  name                            = "Mary-W-Jackson-rule-80-PRO"
+  loadbalancer_id                 = azurerm_lb.Mary-W-Jackson-lb-PRO.id
+  protocol                        = "Tcp"
+  frontend_port                   = 80
+  backend_port                    = 80
+  frontend_ip_configuration_name  = "Mary-W-Jackson-frontend-PRO"
+  probe_id                        = azurerm_lb_probe.Mary-W-Jackson-probe-PRO.id
 }
+
+
+# Outbound rule (necesaria en LB Standard)
+resource "azurerm_lb_outbound_rule" "Mary-W-Jackson-outbound-PRO" {
+  name                    = "Mary-W-Jackson-outbound-PRO"
+  loadbalancer_id         = azurerm_lb.Mary-W-Jackson-lb-PRO.id
+  protocol                = "All"
+  backend_address_pool_id = azurerm_lb_backend_address_pool.Mary-W-Jackson-backend-PRO.id
+
+  frontend_ip_configuration {
+    name = "Mary-W-Jackson-frontend-PRO"
+  }
+}
+
