@@ -456,8 +456,6 @@ resource "azurerm_kubernetes_cluster" "aks-pro" {
 # ===========================================================
 
 # IP pública del Load Balancer
-
-# IP pública del Load Balancer
 resource "azurerm_public_ip" "Mary-W-Jackson-ip-PRO" {
   name                = "Mary-W-Jackson-ip-PRO"
   location            = local.location
