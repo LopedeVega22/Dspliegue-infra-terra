@@ -368,6 +368,39 @@ os_profile {
   }
 }
 
+#====================================================
+#Clúster de AKS
+#====================================================
+
+resource "azurerm_kubernetes_cluster" "maria-magdalena-aks-pro" {
+  name                = "maria-magdalena-aks-pro"
+  location            = local.location
+  resource_group_name = local.rg_name
+  dns_prefix          = "aks-dns-pro"
+  role_based_access_control_enabled = true
+  oidc_issuer_enabled = true
+
+  default_node_pool {
+    name       = "default"
+    node_count = 3
+    vm_size    = "Standard_DS2_v2"
+    os_sku     = "Ubuntu"
+  }
+
+  network_profile {
+  network_plugin = "azure"
+  network_policy = "azure"
+}
+
+
+  identity {
+    type = "SystemAssigned"
+  }
+
+  tags = {
+    environment = "PRO"
+  }
+}
 
 # ===========================================================
 # PUBLIC LOAD BALANCER MARY-W-JACKSON (PRO)
